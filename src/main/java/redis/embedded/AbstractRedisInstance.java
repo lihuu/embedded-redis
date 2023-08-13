@@ -1,5 +1,7 @@
 package redis.embedded;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.embedded.exceptions.EmbeddedRedisException;
 
 import java.io.*;
@@ -11,10 +13,13 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.io.IOUtils;
 
+import javax.swing.plaf.IconUIResource;
+
 abstract class AbstractRedisInstance implements Redis {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractRedisInstance.class);
     protected List<String> args = Collections.emptyList();
     private volatile boolean active = false;
-	private Process redisProcess;
+    private Process redisProcess;
     private final int port;
 
     private ExecutorService executor;
@@ -28,7 +33,7 @@ abstract class AbstractRedisInstance implements Redis {
         return active;
     }
 
-	@Override
+    @Override
     public synchronized void start() throws EmbeddedRedisException {
         if (active) {
             throw new EmbeddedRedisException("This redis server instance is already running...");
@@ -60,6 +65,10 @@ abstract class AbstractRedisInstance implements Redis {
                 if (outputLine == null) {
                     //Something goes wrong. Stream is ended before server was activated.
                     throw new RuntimeException("Can't start redis server. Check logs for details.");
+                } else {
+                    if(logger.isDebugEnabled()){
+                        logger.debug(outputLine);
+                    }
                 }
             } while (!outputLine.matches(redisReadyPattern()));
         } finally {

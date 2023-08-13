@@ -6,6 +6,9 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+
+import static com.google.common.base.StandardSystemProperty.JAVA_IO_TMPDIR;
 
 public class JarUtil {
 
@@ -16,8 +19,10 @@ public class JarUtil {
         File command = new File(tmpDir, executable);
         FileUtils.copyURLToFile(Resources.getResource(executable), command);
         command.deleteOnExit();
-        command.setExecutable(true);
-
+        boolean result = command.setExecutable(true);
+        if(!result){
+            throw new IOException("can't set executable flag for file: " + command.getAbsolutePath());
+        }
         return command;
     }
 }
